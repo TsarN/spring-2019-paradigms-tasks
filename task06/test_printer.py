@@ -55,5 +55,34 @@ def test_function_call():
                   [Number(1), Number(2), Number(3)])) == "foo(1, 2, 3);"
 
 
+def test_end_to_end():
+    program = FunctionDefinition('main', Function(['arg1'], [
+        Read('x'),
+        Print(Reference('x')),
+        Conditional(
+            BinaryOperation(Number(2), '==', Number(3)),
+            [
+                Conditional(Number(1), [], [])
+                ],
+            [
+                FunctionCall(Reference('exit'), [
+                    UnaryOperation('-', Reference('arg1'))
+                    ])
+                ],
+            ),
+        ]))
+    assert pprint(program) == """\
+def main(arg1) {
+    read x;
+    print x;
+    if ((2 == 3)) {
+        if (1) {
+        };
+    } else {
+        exit(-arg1);
+    };
+};"""
+
+
 if __name__ == "__main__":
     pytest.main()
