@@ -1,5 +1,4 @@
-# from .model import ASTNodeVisitor
-from model import *
+from model import ASTNodeVisitor
 
 
 class PrettyPrinter(ASTNodeVisitor):
@@ -16,6 +15,7 @@ class PrettyPrinter(ASTNodeVisitor):
 
     def visit_block(self, block):
         if not block:
+            self.newline()
             return
         self.indent += 1
         self.newline()
