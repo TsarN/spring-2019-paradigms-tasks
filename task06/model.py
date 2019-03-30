@@ -4,7 +4,18 @@ import abc
 
 class Scope:
     def __init__(self, parent=None):
-        raise NotImplementedError
+        self.parent = parent
+        self.vars = {}
+
+    def __getitem__(self, key):
+        if key in self.vars:
+            return self.vars[key]
+        if self.parent:
+            return self.parent[key]
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        self.vars[key] = value
 
 
 class ASTNode(metaclass=abc.ABCMeta):
@@ -30,10 +41,16 @@ class Number(ASTNode):
     __eq__, __ne__, __hash__ — требуется реализовать две из них).
     """
     def __init__(self, value):
-        pass
+        self.value = value
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return self
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class Function(ASTNode):
@@ -48,10 +65,11 @@ class Function(ASTNode):
     Аналогично Number, метод evaluate должен возвращать self.
     """
     def __init__(self, args, body):
-        pass
+        self.args = args
+        self.body = body
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return self
 
 
 class FunctionDefinition(ASTNode):
@@ -64,10 +82,12 @@ class FunctionDefinition(ASTNode):
     Function под заданным именем, а возвращать evaluate должен саму функцию.
     """
     def __init__(self, name, function):
-        pass
+        self.name = name
+        self.function = function
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        scope[self.name] = self.function
+        return self.function
 
 
 class Conditional(ASTNode):
@@ -88,10 +108,23 @@ class Conditional(ASTNode):
     остается на ваше усмотрение.
     """
     def __init__(self, condition, if_true, if_false=None):
-        pass
+        self.condition = condition
+        self.if_true = if_true
+        self.if_false = if_false
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        block = None
+        if self.condition.evaluate(scope) == Number(0):
+            if self.if_false:
+                block = self.if_false
+        else:
+            block = self.if_true
+
+        ret = None
+        if block:
+            for stmt in block:
+                ret = stmt.evaluate(scope)
+        return ret
 
 
 class Print(ASTNode):
@@ -109,10 +142,12 @@ class Print(ASTNode):
     выведен.
     """
     def __init__(self, expr):
-        pass
+        self.expr = expr
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        num = self.expr.evaluate(scope)
+        print(num.value)
+        return num
 
 
 class Read(ASTNode):
@@ -129,10 +164,12 @@ class Read(ASTNode):
     строк и лишних символов не будет).
     """
     def __init__(self, name):
-        pass
+        self.name = name
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        num = Number(int(input()))
+        scope[self.name] = num
+        return num
 
 
 class FunctionCall(ASTNode):
@@ -160,10 +197,22 @@ class FunctionCall(ASTNode):
     неопределён, то возвращаемое значение остаётся на ваше усмотрение.
     """
     def __init__(self, fun_expr, args):
-        pass
+        self.fun_expr = fun_expr
+        self.args = args
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        function = self.fun_expr.evaluate(scope)
+        args = [arg.evaluate(scope) for arg in self.args]
+
+        call_scope = Scope(scope)
+        for name, value in zip(function.args, args):
+            call_scope[name] = value
+
+        ret = None
+        for stmt in function.body:
+            ret = stmt.evaluate(call_scope)
+
+        return ret
 
 
 class Reference(ASTNode):
@@ -173,10 +222,10 @@ class Reference(ASTNode):
     (см. подробнее про класс Scope).
     """
     def __init__(self, name):
-        pass
+        self.name = name
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return scope[self.name]
 
 
 class BinaryOperation(ASTNode):
@@ -200,10 +249,43 @@ class BinaryOperation(ASTNode):
     т.е. не может получиться так, что вам придется сравнивать две функции.
     """
     def __init__(self, lhs, op, rhs):
-        pass
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        lhs = self.lhs.evaluate(scope).value
+        rhs = self.rhs.evaluate(scope).value
+        ret = 0
+
+        if self.op == '+':
+            ret = lhs + rhs
+        elif self.op == '-':
+            ret = lhs - rhs
+        elif self.op == '*':
+            ret = lhs * rhs
+        elif self.op == '/':
+            ret = lhs // rhs
+        elif self.op == '%':
+            ret = lhs % rhs
+        elif self.op == '==':
+            ret = lhs == rhs
+        elif self.op == '!=':
+            ret = lhs != rhs
+        elif self.op == '<':
+            ret = lhs < rhs
+        elif self.op == '<=':
+            ret = lhs <= rhs
+        elif self.op == '>':
+            ret = lhs > rhs
+        elif self.op == '>=':
+            ret = lhs >= rhs
+        elif self.op == '||':
+            ret = lhs or rhs
+        elif self.op == '&&':
+            ret = lhs and rhs
+
+        return Number(int(ret))
 
 
 class UnaryOperation(ASTNode):
@@ -218,7 +300,16 @@ class UnaryOperation(ASTNode):
     остальные за True.
     """
     def __init__(self, op, expr):
-        pass
+        self.op = op
+        self.expr = expr
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        expr = self.expr.evaluate(scope).value
+        ret = 0
+
+        if self.op == '-':
+            ret = -expr
+        elif self.op == '!':
+            ret = int(not expr)
+
+        return Number(ret)
