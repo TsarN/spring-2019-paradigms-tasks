@@ -55,12 +55,10 @@ class PrettyPrinter(ASTNodeVisitor):
     def visit_print(self, node):
         self.result += "print "
         node.expr.accept(self)
-        self.newline()
 
     def visit_read(self, node):
         self.result += "read "
         node.expr.accept(self)
-        self.newline()
 
     def visit_function_call(self, node):
         node.fun_expr.accept(self)
