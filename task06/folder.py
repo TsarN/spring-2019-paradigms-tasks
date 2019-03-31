@@ -35,33 +35,35 @@ class ConstantFolder(ASTNodeVisitor):
     def visit_binary_operation(self, node):
         lhs = node.lhs.accept(self)
         rhs = node.rhs.accept(self)
+        op = node.op
 
         if isinstance(lhs, Number):
             if isinstance(rhs, Number):
                 # BinaryOperation(Number, AnyBinOp, Number)
-                return BinaryOperation(lhs, node.op, rhs).evaluate(None)
-            if lhs.value == 0 and isinstance(rhs, Reference):
+                return BinaryOperation(lhs, op, rhs).evaluate(None)
+            if lhs.value == 0 and isinstance(rhs, Reference) and op == '*':
                 # BinaryOperation(Number(0), '*', Reference)
                 return Number(0)
         elif isinstance(rhs, Number):
-            if rhs.value == 0 and isinstance(lhs, Reference):
+            if rhs.value == 0 and isinstance(lhs, Reference) and op =='*':
                 # BinaryOperation(Reference, '*', Number(0))
                 return Number(0)
         elif isinstance(lhs, Reference) and isinstance(rhs, Reference):
-            if lhs.name == rhs.name and node.op == '-':
+            if lhs.name == rhs.name and op == '-':
                 # BinaryOperation(Reference(name), ‘-’, Reference(name))
                 return Number(0)
 
-        return BinaryOperation(lhs, node.op, rhs)
+        return BinaryOperation(lhs, op, rhs)
 
     def visit_unary_operation(self, node):
         expr = node.expr.accept(self)
+        op = node.op
 
         if isinstance(expr, Number):
             # UnaryOperation(AnyUnOp, Number)
-            return UnaryOperation(node.op, expr).evaluate(None)
+            return UnaryOperation(op, expr).evaluate(None)
 
-        return UnaryOperation(node.op, expr)
+        return UnaryOperation(op, expr)
 
 
 def fold_constants(program):
