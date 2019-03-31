@@ -14,10 +14,8 @@ class ConstantFolder(ASTNodeVisitor):
 
     def visit_conditional(self, node):
         condition = node.condition.accept(self)
-        if_true = [stmt.accept(self) for stmt in node.condition.if_true]
-        if_false = []
-        if node.condition.if_false:
-            if_false = [stmt.accept(self) for stmt in node.condition.if_false]
+        if_true = [stmt.accept(self) for stmt in node.if_true]
+        if_false = [stmt.accept(self) for stmt in node.if_false]
         return Conditional(condition, if_true, if_false)
 
     def visit_print(self, node):
