@@ -30,6 +30,10 @@ class ASTNode(metaclass=abc.ABCMeta):
     def accept(self, visitor):
         pass
 
+    @abc.abstractmethod
+    def __eq__(self, other):
+        pass
+
 
 class ASTNodeVisitor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -86,6 +90,7 @@ class Number(ASTNode):
     быть можно положить в словарь в качестве ключа (см. специальные методы
     __eq__, __ne__, __hash__ — требуется реализовать две из них).
     """
+
     def __init__(self, value):
         self.value = value
 
@@ -96,6 +101,8 @@ class Number(ASTNode):
         return visitor.visit_number(self)
 
     def __eq__(self, other):
+        if not isinstance(other, Number):
+            return False
         return self.value == other.value
 
     def __hash__(self):
@@ -113,6 +120,7 @@ class Function(ASTNode):
 
     Аналогично Number, метод evaluate должен возвращать self.
     """
+
     def __init__(self, args, body):
         self.args = args
         self.body = body
@@ -122,6 +130,11 @@ class Function(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_function(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Function):
+            return False
+        return self.args == other.args and self.body == other.body
 
 
 class FunctionDefinition(ASTNode):
@@ -133,6 +146,7 @@ class FunctionDefinition(ASTNode):
     обновление текущего Scope,  т.е. в него добавляется новое значение типа
     Function под заданным именем, а возвращать evaluate должен саму функцию.
     """
+
     def __init__(self, name, function):
         self.name = name
         self.function = function
@@ -143,6 +157,11 @@ class FunctionDefinition(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_function_definition(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, FunctionDefinition):
+            return False
+        return self.name == other.name and self.function == other.function
 
 
 class Conditional(ASTNode):
@@ -162,10 +181,11 @@ class Conditional(ASTNode):
     Если соответствующий список пуст или равен None, то возвращаемое значение
     остается на ваше усмотрение.
     """
+
     def __init__(self, condition, if_true, if_false=None):
         self.condition = condition
-        self.if_true = if_true
-        self.if_false = if_false
+        self.if_true = if_true or []
+        self.if_false = if_false or []
 
     def evaluate(self, scope):
         block = None
@@ -184,6 +204,13 @@ class Conditional(ASTNode):
     def accept(self, visitor):
         return visitor.visit_conditional(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, Conditional):
+            return False
+        return self.condition == other.condition and \
+            self.if_true == other.if_true and \
+            self.if_false == other.if_false
+
 
 class Print(ASTNode):
     """
@@ -199,6 +226,7 @@ class Print(ASTNode):
     Возвращаемое значение метода evаluate - объект типа Number, который был
     выведен.
     """
+
     def __init__(self, expr):
         self.expr = expr
 
@@ -209,6 +237,11 @@ class Print(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_print(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Print):
+            return False
+        return self.expr == other.expr
 
 
 class Read(ASTNode):
@@ -224,6 +257,7 @@ class Read(ASTNode):
     Каждое входное число располагается на отдельной строке (никаких пустых
     строк и лишних символов не будет).
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -234,6 +268,11 @@ class Read(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_read(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Read):
+            return False
+        return self.name == other.name
 
 
 class FunctionCall(ASTNode):
@@ -260,6 +299,7 @@ class FunctionCall(ASTNode):
     метода evaluate. Если результат вычисления последнего выражения
     неопределён, то возвращаемое значение остаётся на ваше усмотрение.
     """
+
     def __init__(self, fun_expr, args):
         self.fun_expr = fun_expr
         self.args = args
@@ -281,6 +321,11 @@ class FunctionCall(ASTNode):
     def accept(self, visitor):
         return visitor.visit_function_call(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, FunctionCall):
+            return False
+        return self.fun_expr == other.fun_expr and self.args == other.args
+
 
 class Reference(ASTNode):
     """
@@ -288,6 +333,7 @@ class Reference(ASTNode):
     Метод evaluate должен найти в scope объект с именем name и вернуть его
     (см. подробнее про класс Scope).
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -296,6 +342,11 @@ class Reference(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_reference(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, Reference):
+            return False
+        return self.name == other.name
 
 
 class BinaryOperation(ASTNode):
@@ -318,6 +369,7 @@ class BinaryOperation(ASTNode):
     Гарантируется, что lhs и rhs при вычислении дадут объект типа Number,
     т.е. не может получиться так, что вам придется сравнивать две функции.
     """
+
     def __init__(self, lhs, op, rhs):
         self.lhs = lhs
         self.op = op
@@ -360,6 +412,13 @@ class BinaryOperation(ASTNode):
     def accept(self, visitor):
         return visitor.visit_binary_operation(self)
 
+    def __eq__(self, other):
+        if not isinstance(other, BinaryOperation):
+            return False
+        return self.lhs == other.lhs and \
+            self.op == other.op and \
+            self.rhs == other.rhs
+
 
 class UnaryOperation(ASTNode):
     """
@@ -372,6 +431,7 @@ class UnaryOperation(ASTNode):
     Как и для BinaryOperation, Number, хранящий 0, считаем за False, а все
     остальные за True.
     """
+
     def __init__(self, op, expr):
         self.op = op
         self.expr = expr
@@ -389,3 +449,8 @@ class UnaryOperation(ASTNode):
 
     def accept(self, visitor):
         return visitor.visit_unary_operation(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, UnaryOperation):
+            return False
+        return self.expr == other.expr and self.op == other.op
