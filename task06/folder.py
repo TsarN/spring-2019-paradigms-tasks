@@ -19,10 +19,10 @@ class ConstantFolder(ASTNodeVisitor):
         return Conditional(condition, if_true, if_false)
 
     def visit_print(self, node):
-        return Print(node.accept(self))
+        return Print(node.expr.accept(self))
 
     def visit_read(self, node):
-        return Read(node.accept(self))
+        return Read(node.name.accept(self))
 
     def visit_function_call(self, node):
         fun_expr = node.fun_expr.accept(self)
