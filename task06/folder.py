@@ -22,7 +22,7 @@ class ConstantFolder(ASTNodeVisitor):
         return Print(node.expr.accept(self))
 
     def visit_read(self, node):
-        return Read(node.name.accept(self))
+        return Read(node.name)
 
     def visit_function_call(self, node):
         fun_expr = node.fun_expr.accept(self)
