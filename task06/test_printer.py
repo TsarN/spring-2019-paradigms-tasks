@@ -14,13 +14,13 @@ def pprint(program):
 def test_conditional():
     assert pprint(Conditional(Number(42), [], [])) == """\
 if (42) {
-};"""
+}"""
 
 
 def test_function_definition():
     assert pprint(FunctionDefinition("foo", Function([], []))) == """\
 def foo() {
-};"""
+}"""
 
 
 def test_print():
@@ -76,11 +76,11 @@ def main(arg1) {
     print x;
     if ((2 == 3)) {
         if (1) {
-        };
+        }
     } else {
         exit(-arg1);
-    };
-};"""
+    }
+}"""
 
 
 if __name__ == "__main__":

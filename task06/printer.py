@@ -7,7 +7,9 @@ class PrettyPrinter(ASTNodeVisitor):
         self.indent = 0
 
     def __str__(self):
-        return self.result + ";"
+        if not self.result.endswith("}"):
+            self.result += ";"
+        return self.result
 
     def newline(self):
         self.result += "\n"
@@ -23,7 +25,8 @@ class PrettyPrinter(ASTNodeVisitor):
             if i != 0:
                 self.newline()
             stmt.accept(self)
-            self.result += ";"
+            if not self.result.endswith("}"):
+                self.result += ";"
         self.indent -= 1
         self.newline()
 
