@@ -1,9 +1,33 @@
 #!/usr/bin/env python3
-import io
-
 import pytest
 
 from model import *
+
+
+def test_construction():
+    FunctionDefinition('fac', Function(['n'], [
+        Conditional(
+            BinaryOperation(Reference('n'), '==', Number(0)),
+            [Number(1)],
+            [
+                BinaryOperation(
+                    Reference('n'),
+                    '*',
+                    FunctionCall(Reference('fac'), [
+                        BinaryOperation(
+                            Reference('n'),
+                            '-',
+                            Number(1)
+                        )
+                    ])
+                )
+            ]
+        )
+    ]))
+    Read('n')
+    Print(
+        UnaryOperation('-', FunctionCall(Reference('fac'), [Reference('n')]))
+    )
 
 
 def test_this_scope():
@@ -64,7 +88,8 @@ def test_print(capsys):
 
 
 def test_read(monkeypatch):
-    monkeypatch.setattr("sys.stdin", io.StringIO("42\n"))
+    from io import StringIO
+    monkeypatch.setattr("sys.stdin", StringIO("42\n"))
 
     scope = Scope()
     assert Read("ans").evaluate(scope).value == 42
