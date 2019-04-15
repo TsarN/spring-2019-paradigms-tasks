@@ -108,6 +108,9 @@ class Number(ASTNode):
     def __hash__(self):
         return hash(self.value)
 
+    def __bool__(self):
+        return self.value != 0
+
 
 class Function(ASTNode):
     """
@@ -188,17 +191,10 @@ class Conditional(ASTNode):
         self.if_false = if_false or []
 
     def evaluate(self, scope):
-        block = None
-        if self.condition.evaluate(scope) == Number(0):
-            if self.if_false:
-                block = self.if_false
-        else:
-            block = self.if_true
-
+        blk = self.if_true if self.condition.evaluate(scope) else self.if_false
         ret = None
-        if block:
-            for stmt in block:
-                ret = stmt.evaluate(scope)
+        for stmt in blk or []:
+            ret = stmt.evaluate(scope)
         return ret
 
     def accept(self, visitor):
