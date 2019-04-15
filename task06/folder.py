@@ -40,7 +40,7 @@ class ConstantFolder(ASTNodeVisitor):
         if isinstance(lhs, Number):
             if isinstance(rhs, Number):
                 # BinaryOperation(Number, AnyBinOp, Number)
-                return BinaryOperation(lhs, op, rhs).evaluate(None)
+                return BinaryOperation(lhs, op, rhs).evaluate(Scope())
             if lhs.value == 0 and isinstance(rhs, Reference) and op == '*':
                 # BinaryOperation(Number(0), '*', Reference)
                 return Number(0)
@@ -61,7 +61,7 @@ class ConstantFolder(ASTNodeVisitor):
 
         if isinstance(expr, Number):
             # UnaryOperation(AnyUnOp, Number)
-            return UnaryOperation(op, expr).evaluate(None)
+            return UnaryOperation(op, expr).evaluate(Scope())
 
         return UnaryOperation(op, expr)
 
