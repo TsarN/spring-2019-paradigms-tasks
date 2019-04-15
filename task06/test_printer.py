@@ -2,59 +2,72 @@
 import pytest
 
 from model import *
-from printer import PrettyPrinter
+from printer import pretty_print
 
 
-def pprint(program):
-    printer = PrettyPrinter()
-    program.accept(printer)
-    return str(printer)
-
-
-def test_conditional():
-    assert pprint(Conditional(Number(42), [], [])) == """\
+def test_conditional(capsys):
+    pretty_print(Conditional(Number(42), [], []))
+    captured = capsys.readouterr()
+    assert captured.out == """\
 if (42) {
-}"""
+}
+"""
 
 
-def test_function_definition():
-    assert pprint(FunctionDefinition("foo", Function([], []))) == """\
+def test_function_definition(capsys):
+    pretty_print(FunctionDefinition("foo", Function([], [])))
+    captured = capsys.readouterr()
+    assert captured.out == """\
 def foo() {
-}"""
+}
+"""
 
 
-def test_print():
-    assert pprint(Print(Number(42))) == "print 42;"
+def test_print(capsys):
+    pretty_print(Print(Number(42)))
+    captured = capsys.readouterr()
+    assert captured.out == "print 42;\n"
 
 
-def test_read():
-    assert pprint(Read('x')) == "read x;"
+def test_read(capsys):
+    pretty_print(Read('x'))
+    captured = capsys.readouterr()
+    assert captured.out == "read x;\n"
 
 
-def test_number():
-    assert pprint(Number(10)) == "10;"
+def test_number(capsys):
+    pretty_print(Number(10))
+    captured = capsys.readouterr()
+    assert captured.out == "10;\n"
 
 
-def test_reference():
-    assert pprint(Reference('x')) == "x;"
+def test_reference(capsys):
+    pretty_print(Reference('x'))
+    captured = capsys.readouterr()
+    assert captured.out == "x;\n"
 
 
-def test_binary_operation():
+def test_binary_operation(capsys):
     add = BinaryOperation(Number(2), '+', Number(3))
     mul = BinaryOperation(Number(0), '*', add)
-    assert pprint(mul) == "(0 * (2 + 3));"
+    pretty_print(mul)
+    captured = capsys.readouterr()
+    assert captured.out == "(0 * (2 + 3));\n"
 
 
-def test_unary_operation():
-    assert pprint(UnaryOperation('-', Number(42))) == "-42;"
+def test_unary_operation(capsys):
+    pretty_print(UnaryOperation('-', Number(42)))
+    captured = capsys.readouterr()
+    assert captured.out == "(-(42));\n"
 
 
-def test_function_call():
-    assert pprint(FunctionCall(Reference('foo'),
-                  [Number(1), Number(2), Number(3)])) == "foo(1, 2, 3);"
+def test_function_call(capsys):
+    pretty_print(FunctionCall(Reference('foo'), [Number(1), Number(2), Number(3)]))
+    captured = capsys.readouterr()
+    assert captured.out == "foo(1, 2, 3);\n"
 
 
-def test_end_to_end():
+def test_end_to_end(capsys):
     program = FunctionDefinition('main', Function(['arg1'], [
         Read('x'),
         Print(Reference('x')),
@@ -70,17 +83,20 @@ def test_end_to_end():
                 ],
             ),
         ]))
-    assert pprint(program) == """\
+    pretty_print(program)
+    captured = capsys.readouterr()
+    assert captured.out == """\
 def main(arg1) {
-    read x;
-    print x;
-    if ((2 == 3)) {
-        if (1) {
-        }
-    } else {
-        exit(-arg1);
-    }
-}"""
+	read x;
+	print x;
+	if ((2 == 3)) {
+		if (1) {
+		}
+	} else {
+		exit((-(arg1)));
+	}
+}
+"""
 
 
 if __name__ == "__main__":

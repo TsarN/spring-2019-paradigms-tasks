@@ -6,24 +6,22 @@ class PrettyPrinter(ASTNodeVisitor):
         self.result = ""
         self.indent = 0
 
-    def __str__(self):
+    def finalize(self):
         if not self.result.endswith("}"):
             self.result += ";"
         return self.result
 
     def newline(self):
         self.result += "\n"
-        self.result += "    " * self.indent
+        self.result += "\t" * self.indent
 
     def visit_block(self, block):
         if not block:
             self.newline()
             return
         self.indent += 1
-        self.newline()
-        for i, stmt in enumerate(block):
-            if i != 0:
-                self.newline()
+        for stmt in block:
+            self.newline()
             stmt.accept(self)
             if not self.result.endswith("}"):
                 self.result += ";"
@@ -82,11 +80,12 @@ class PrettyPrinter(ASTNodeVisitor):
         self.result += ")"
 
     def visit_unary_operation(self, node):
-        self.result += "{}".format(node.op)
+        self.result += "({}(".format(node.op)
         node.expr.accept(self)
+        self.result += "))"
 
 
 def pretty_print(program):
     printer = PrettyPrinter()
     program.accept(printer)
-    print(str(printer))
+    print(printer.finalize())
