@@ -62,7 +62,8 @@ def test_unary_operation(capsys):
 
 
 def test_function_call(capsys):
-    pretty_print(FunctionCall(Reference('foo'), [Number(1), Number(2), Number(3)]))
+    pretty_print(FunctionCall(Reference('foo'),
+                 [Number(1), Number(2), Number(3)]))
     captured = capsys.readouterr()
     assert captured.out == "foo(1, 2, 3);\n"
 
@@ -87,14 +88,14 @@ def test_end_to_end(capsys):
     captured = capsys.readouterr()
     assert captured.out == """\
 def main(arg1) {
-	read x;
-	print x;
-	if ((2 == 3)) {
-		if (1) {
-		}
-	} else {
-		exit((-(arg1)));
-	}
+\tread x;
+\tprint x;
+\tif ((2 == 3)) {
+\t\tif (1) {
+\t\t}
+\t} else {
+\t\texit((-(arg1)));
+\t}
 }
 """
 
