@@ -169,13 +169,7 @@ fn find_solution(f: &mut Field) -> Option<Field> {
     try_extend_field(f, |f_solved| f_solved.clone(), find_solution)
 }
 
-/// Перебирает все возможные решения головоломки, заданной параметром `f`, в несколько потоков.
-/// Если хотя бы одно решение `s` существует, возвращает `Some(s)`,
-/// в противном случае возвращает `None`.
-fn find_solution_parallel(mut f: Field) -> Option<Field> {
-    let (tx, rx) = mpsc::channel();
-
-    let pool = ThreadPool::new(8);
+fn spawn_tasks(pool: &ThreadPool, tx: mpsc::Sender<Option<Field>>, mut f: &mut Field) {
     try_extend_field(&mut f, |f_solved| {
         let tx = tx.clone();
         tx.send(Some(f_solved.clone())).unwrap_or(());
@@ -188,7 +182,16 @@ fn find_solution_parallel(mut f: Field) -> Option<Field> {
         });
         None
     });
-    drop(tx);
+}
+
+/// Перебирает все возможные решения головоломки, заданной параметром `f`, в несколько потоков.
+/// Если хотя бы одно решение `s` существует, возвращает `Some(s)`,
+/// в противном случае возвращает `None`.
+fn find_solution_parallel(mut f: Field) -> Option<Field> {
+    let (tx, rx) = mpsc::channel();
+
+    let pool = ThreadPool::new(8);
+    spawn_tasks(&pool, tx, &mut f);
     rx.iter().find_map(|x| x)
 }
 
