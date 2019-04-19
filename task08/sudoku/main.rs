@@ -16,6 +16,8 @@ use field::{parse_field, Field, N};
 use std::sync::mpsc;
 use threadpool::ThreadPool;
 
+const SPAWN_DEPTH: usize = 2;
+
 /// Эта функция выполняет один шаг перебора в поисках решения головоломки.
 /// Она перебирает значение какой-нибудь пустой клетки на поле всеми непротиворечивыми способами.
 /// Что делать после фиксации значения, задаётся параметрами функции.
@@ -169,17 +171,21 @@ fn find_solution(f: &mut Field) -> Option<Field> {
     try_extend_field(f, |f_solved| f_solved.clone(), find_solution)
 }
 
-fn spawn_tasks(pool: &ThreadPool, tx: mpsc::Sender<Option<Field>>, mut f: &mut Field) {
+fn spawn_tasks(pool: &ThreadPool, tx: mpsc::Sender<Option<Field>>, mut f: &mut Field, depth: usize) {
     try_extend_field(&mut f, |f_solved| {
         let tx = tx.clone();
         tx.send(Some(f_solved.clone())).unwrap_or(());
         f_solved.clone()
     }, |f| {
-        let mut f = f.clone();
-        let tx = tx.clone();
-        pool.execute(move|| {
-            tx.send(find_solution(&mut f)).unwrap_or(());
-        });
+        if depth == 0 {
+            let mut f = f.clone();
+            let tx = tx.clone();
+            pool.execute(move|| {
+                tx.send(find_solution(&mut f)).unwrap_or(());
+            });
+        } else {
+            spawn_tasks(&pool, tx.clone(), &mut f.clone(), depth - 1);
+        }
         None
     });
 }
@@ -191,7 +197,7 @@ fn find_solution_parallel(mut f: Field) -> Option<Field> {
     let (tx, rx) = mpsc::channel();
 
     let pool = ThreadPool::new(8);
-    spawn_tasks(&pool, tx, &mut f);
+    spawn_tasks(&pool, tx, &mut f, SPAWN_DEPTH);
     rx.iter().find_map(|x| x)
 }
 
