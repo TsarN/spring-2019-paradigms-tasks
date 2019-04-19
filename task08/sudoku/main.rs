@@ -16,8 +16,6 @@ use field::{parse_field, Field, N};
 use std::sync::mpsc;
 use threadpool::ThreadPool;
 
-const SPAWN_DEPTH: usize = 2;
-
 /// Эта функция выполняет один шаг перебора в поисках решения головоломки.
 /// Она перебирает значение какой-нибудь пустой клетки на поле всеми непротиворечивыми способами.
 /// Что делать после фиксации значения, задаётся параметрами функции.
@@ -171,34 +169,40 @@ fn find_solution(f: &mut Field) -> Option<Field> {
     try_extend_field(f, |f_solved| f_solved.clone(), find_solution)
 }
 
-fn spawn_tasks(pool: &ThreadPool, tx: mpsc::Sender<Option<Field>>, mut f: &mut Field, depth: usize) {
-    try_extend_field(&mut f, |f_solved| {
+fn spawn_tasks(pool: &ThreadPool, tx: &mpsc::Sender<Option<Field>>, mut f: &mut Field, depth: usize) {
+    let solved = |f_solved: &mut Field| {
         let tx = tx.clone();
         tx.send(Some(f_solved.clone())).unwrap_or(());
         f_solved.clone()
-    }, |f| {
-        if depth == 0 {
+    };
+
+    if depth == 0 {
+        try_extend_field(&mut f, solved, |f| {
             let mut f = f.clone();
             let tx = tx.clone();
-            pool.execute(move|| {
+            pool.execute(move || {
                 tx.send(find_solution(&mut f)).unwrap_or(());
             });
-        } else {
-            spawn_tasks(&pool, tx.clone(), &mut f.clone(), depth - 1);
-        }
-        None
-    });
+            None
+        });
+    } else {
+        try_extend_field(&mut f, solved, |mut f| {
+            spawn_tasks(&pool, &tx, &mut f, depth - 1);
+            None
+        });
+    }
 }
 
 /// Перебирает все возможные решения головоломки, заданной параметром `f`, в несколько потоков.
 /// Если хотя бы одно решение `s` существует, возвращает `Some(s)`,
 /// в противном случае возвращает `None`.
 fn find_solution_parallel(mut f: Field) -> Option<Field> {
+    const SPAWN_DEPTH: usize = 2;
     let (tx, rx) = mpsc::channel();
-
     let pool = ThreadPool::new(8);
-    spawn_tasks(&pool, tx, &mut f, SPAWN_DEPTH);
-    rx.iter().find_map(|x| x)
+    spawn_tasks(&pool, &tx, &mut f, SPAWN_DEPTH);
+    drop(tx);
+    rx.into_iter().find_map(|x| x)
 }
 
 /// Юнит-тест, проверяющий, что `find_solution()` находит лексикографически минимальное решение на пустом поле.
