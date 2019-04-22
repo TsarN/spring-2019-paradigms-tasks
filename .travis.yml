@@ -34,4 +34,5 @@ script:
 - diff -u <(cat src/*) <(clang-format -style=file src/*)
 - cmake . && make
 - valgrind --tool=memcheck --leak-check=full ./queue_test
+- valgrind --tool=memcheck --leak-check=full ./tsqueue_test
 - popd
