@@ -170,26 +170,20 @@ fn find_solution(f: &mut Field) -> Option<Field> {
 }
 
 fn spawn_tasks(pool: &ThreadPool, tx: &mpsc::Sender<Option<Field>>, mut f: &mut Field, depth: usize) {
-    let solved = |f_solved: &mut Field| -> Option<Field> {
-        let tx = tx.clone();
-        tx.send(Some(f_solved.clone())).unwrap_or(());
-        None
-    };
-
     if depth == 0 {
-        try_extend_field(&mut f, solved, |f| {
-            let mut f = f.clone();
-            let tx = tx.clone();
-            pool.execute(move || {
-                tx.send(find_solution(&mut f)).unwrap_or(());
-            });
-            None
-        });
+        tx.send(find_solution(&mut f)).unwrap_or(());
     } else {
-        try_extend_field(&mut f, solved, |mut f| {
-            spawn_tasks(&pool, &tx, &mut f, depth - 1);
-            None
-        });
+        try_extend_field(
+            &mut f,
+            |f_solved: &mut Field| -> Option<Field> {
+                tx.send(Some(f_solved.clone())).unwrap_or(());
+                None
+            },
+            |mut f| {
+                spawn_tasks(&pool, &tx, &mut f, depth - 1);
+                None
+            },
+        );
     }
 }
 
