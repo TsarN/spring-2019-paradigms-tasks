@@ -171,7 +171,11 @@ fn find_solution(f: &mut Field) -> Option<Field> {
 
 fn spawn_tasks(pool: &ThreadPool, tx: &mpsc::Sender<Option<Field>>, mut f: &mut Field, depth: usize) {
     if depth == 0 {
-        tx.send(find_solution(&mut f)).unwrap_or(());
+        let mut f = f.clone();
+        let tx = tx.clone();
+        pool.execute(move || {
+            tx.send(find_solution(&mut f)).unwrap_or(());
+        });
     } else {
         try_extend_field(
             &mut f,
