@@ -179,9 +179,8 @@ fn spawn_tasks(pool: &ThreadPool, tx: &mpsc::Sender<Option<Field>>, mut f: &mut 
     } else {
         try_extend_field(
             &mut f,
-            |f_solved: &mut Field| -> Option<Field> {
-                tx.send(Some(f_solved.clone())).unwrap_or(());
-                None
+            |f| {
+                tx.send(Some(f.clone())).unwrap_or(());
             },
             |mut f| {
                 spawn_tasks(&pool, &tx, &mut f, depth - 1);
