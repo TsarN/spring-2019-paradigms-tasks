@@ -33,6 +33,6 @@ script:
 - pushd task09/
 - diff -u <(cat src/*) <(clang-format -style=file src/*)
 - cmake . && make
-- valgrind --tool=memcheck --leak-check=full ./queue_test
-- valgrind --tool=memcheck --leak-check=full ./tsqueue_test
+- valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./queue_test
+- valgrind --tool=memcheck --leak-check=full --error-exitcode=1 ./tsqueue_test
 - popd
