@@ -11,11 +11,17 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     [testCase "head' works on non-empty list" $
         head' [1,2,3] @?= 1
 
+    , testCase "head' works on an infinite list too" $
+        head' [1..] @?= 1
+
     , testCase "tail' works on non-empty list too" $
         tail' [1,2,3] @?= [2,3]
 
     , testCase "take' takes 1 element from 3-element list" $
         take' 1 [1,2,3] @?= [1]
+
+    , testCase "take' takes 3 elements from an infinite list" $
+        take' 3 [1..] @?= [1,2,3]
 
     , testCase "drop' drops 1 element from 3-element list" $
         drop' 1 [1,2,3] @?= [2,3]
