@@ -22,6 +22,7 @@ take' n (x:xs) = x:take' (n - 1) xs
 -- списка, то пустой список.
 drop' :: Int -> [a] -> [a]
 drop' 0 xs = xs
+drop' _ [] = []
 drop' n (_:xs) = drop' (n - 1) xs
 
 -- 5. filter' возвращает список из элементов, для которых f возвращает True

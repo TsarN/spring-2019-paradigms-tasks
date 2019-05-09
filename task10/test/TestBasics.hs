@@ -14,7 +14,7 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "head' works on an infinite list too" $
         head' [1..] @?= 1
 
-    , testCase "tail' works on non-empty list too" $
+    , testCase "tail' works on a non-empty finite list" $
         tail' [1,2,3] @?= [2,3]
 
     , testCase "take' takes 1 element from 3-element list" $
@@ -26,11 +26,17 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "drop' drops 1 element from 3-element list" $
         drop' 1 [1,2,3] @?= [2,3]
 
+    , testCase "drop' drops 5 elements from 3-element list" $
+        drop' 5 [1,2,3] @?= []
+
     , testCase "filter' selects only even numbers from 0 to 10" $
         filter' even [0..10] @?= [0,2..10]
 
     , testCase "foldl'' can be used for finding sum of elements" $
         foldl'' (+) 0 [1,2,3] @?= 6
+
+    , testCase "foldl'' can be used with non-associative function" $
+        foldl'' (-) 0 [1,2,3] @?= (-6)
 
     , testCase "concat' works on finite lists as expected" $
         concat' [1,2,3] [4,5,6] @?= [1..6]
