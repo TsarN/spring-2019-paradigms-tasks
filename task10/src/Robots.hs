@@ -35,13 +35,13 @@ getHealth (_, _, myHealth) = myHealth
 -- состояние робота
 
 setName :: Name -> Robot -> Robot
-setName newName (_, myAttack, myHealth) = (newName, myAttack, myHealth)
+setName newName (_, myAttack, myHealth) = robot newName myAttack myHealth
 
 setAttack :: Attack -> Robot -> Robot
-setAttack newAttack (myName, _, myHealth) = (myName, newAttack, myHealth)
+setAttack newAttack (myName, _, myHealth) = robot myName newAttack myHealth
 
 setHealth :: Health -> Robot -> Robot
-setHealth newHealth (myName, myAttack, _) = (myName, myAttack, newHealth)
+setHealth newHealth (myName, myAttack, _) = robot myName myAttack newHealth
 
 -- Шаг 2.
 -- Напишите функцию, которая ведет себя как __str__
@@ -65,7 +65,7 @@ damage victim amount = let
 -- Вам понадобится вспомогательная функция isAlive, которая бы проверяла, жив робот или не очень
 -- Робот считается живым, если его уровень здоровья строго больше нуля.
 isAlive :: Robot -> Bool
-isAlive patient = getHealth patient > 0
+isAlive = (>0) . getHealth
 
 -- Затем, используя функцию damage, напишите функцию, которая моделирует один раунд схватки между
 -- двумя роботами
@@ -89,12 +89,15 @@ fight attacker defender | isAlive attacker = damage defender $ getAttack attacke
 -- Если же так вышло, что после трех раундов у обоих роботов одинаковый уровень жизни, то
 -- победителем считается тот, кто ударял первым(то есть атакующий робот)
 threeRoundFight :: Robot -> Robot -> Robot
-threeRoundFight attacker defender | getHealth defender'' > getHealth attacker' = defender''
-                                  | otherwise = attacker'
-    where
+threeRoundFight attacker defender = 
+    let
         defender' = fight attacker defender
         attacker' = fight defender' attacker
         defender'' = fight attacker' defender'
+    in
+        if getHealth attacker' >= getHealth defender''
+            then attacker'
+            else defender''
 
 -- Шаг 4.
 -- Создайте список из трех роботов(Абсолютно любых, но лучше живых, мы собираемся их побить)

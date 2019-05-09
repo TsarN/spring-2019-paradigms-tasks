@@ -17,6 +17,9 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "tail' works on a non-empty finite list" $
         tail' [1,2,3] @?= [2,3]
 
+    , testCase "tail' works on an infinite list" $
+        take 100 (tail' [1..]) @?= [2..101]
+
     , testCase "take' takes 1 element from 3-element list" $
         take' 1 [1,2,3] @?= [1]
 
@@ -26,11 +29,17 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "drop' drops 1 element from 3-element list" $
         drop' 1 [1,2,3] @?= [2,3]
 
+    , testCase "drop' drops 3 elements from an infinite list" $
+        take 100 (drop' 3 [1..]) @?= [4..103]
+
     , testCase "drop' drops 5 elements from 3-element list" $
         drop' 5 [1,2,3] @?= []
 
     , testCase "filter' selects only even numbers from 0 to 10" $
         filter' even [0..10] @?= [0,2..10]
+
+    , testCase "filter' selects only odd numbers from all positive integers" $
+        take 100 (filter' odd [1..]) @?= [1,3..199]
 
     , testCase "foldl'' can be used for finding sum of elements" $
         foldl'' (+) 0 [1,2,3] @?= 6
@@ -40,6 +49,9 @@ testsBasics = testGroup "Unit tests for Basics tasks"
 
     , testCase "concat' works on finite lists as expected" $
         concat' [1,2,3] [4,5,6] @?= [1..6]
+
+    , testCase "concat' works on infinite lists as expected" $
+        take 100 (concat' [1,2,3] [4..]) @?= [1..100]
 
     , testCase "quickSort actualy sorts the list" $
         quickSort' [5,2,3,4,1] @?= [1..5]

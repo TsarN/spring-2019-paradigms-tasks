@@ -10,6 +10,7 @@ testsRobots :: TestTree
 testsRobots = let
         walter = robot "Walter" 50 100
         mike = robot "Mike" 30 200
+        mrdead = robot "Dead" 50 0
     in testGroup "Unit tests for Robots task"
         [ testCase "Test for getName" $
             getName walter @?= "Walter"
@@ -35,8 +36,11 @@ testsRobots = let
         , testCase "Test for damage" $
             damage walter 25 @?= robot "Walter" 50 75
 
-        , testCase "Test for isAlive" $
+        , testCase "Test for isAlive on an alive robot" $
             isAlive walter @?= True
+
+        , testCase "Test for isAlive on a dead robot" $
+            isAlive mrdead @?= False
 
         , testCase "Test for fight" $
             fight walter mike @?= robot "Mike" 30 150
