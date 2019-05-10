@@ -37,7 +37,7 @@ filter' f (x:xs) | f x       = x : filter' f xs
 -- foldl'' (*) 4 [] == 4
 foldl'' :: (a -> b -> a) -> a -> [b] -> a
 foldl'' _ z []     = z
-foldl'' f z (x:xs) = f (foldl'' f z xs) x
+foldl'' f z (x:xs) = foldl'' f (f z x) xs
 
 -- 7. concat' принимает на вход два списка и возвращает их конкатенацию
 -- concat' [1,2] [3] == [1,2,3]
