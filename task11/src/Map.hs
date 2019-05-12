@@ -39,7 +39,9 @@ class Map t where
     insert = undefined {- insertWith -}
 
     insertWith :: Ord k => (a -> a -> a) -> k -> a -> t k a -> t k a
-    insertWith = undefined {- alter -}
+    insertWith f k a = alter ( \x -> case x of
+            Just value -> Just $ f a value
+            Nothing    -> Just a ) k
 
     insertWithKey :: Ord k => (k -> a -> a -> a) -> k -> a -> t k a -> t k a
     insertWithKey = undefined {- insertWith -}

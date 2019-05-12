@@ -34,26 +34,38 @@ mapTests name (_ :: Proxy m) =
                 Map.lookup 5 map' @?= Just "five",
 
             testCase "insert via alter into a singleton map works" $
-                let map = singleton 3 "three" :: m Int String in
+                let map  = singleton 3 "three" :: m Int String in
                 let map' = Map.alter (const $ Just "five") 5 map in
                 True @?= ( Map.lookup 3 map' == Just "three" &&
                            Map.lookup 5 map' == Just "five" ),
 
             testCase "alter into a singleton map works" $
-                let map = singleton 5 "five" :: m Int String in
+                let map  = singleton 5 "five" :: m Int String in
                 let map' = Map.alter (const $ Just "FIVE") 5 map in
                 Map.lookup 5 map' @?= Just "FIVE",
 
             testCase "delete via alter does nothing if element doesn't exist" $
-                let map = singleton 5 "five" :: m Int String in
+                let map  = singleton 5 "five" :: m Int String in
                 let map' = Map.alter (const Nothing) 3 map in
                 True @?= ( Map.lookup 3 map' == Nothing &&
                            Map.lookup 5 map' == Just "five" ),
 
             testCase "delete via alter works" $
-                let map = singleton 5 "five" :: m Int String in
+                let map  = singleton 5 "five" :: m Int String in
                 let map' = Map.alter (const Nothing) 5 map in
                 Map.lookup 5 map' @?= Nothing
+        ],
+
+        testGroup "Unit tests - insertWith" [
+            testCase "insertWith inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insertWith (const $ const $ "wrong") 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insertWith alters if value exists" $
+                let map = singleton 5 "five" :: m Int String in
+                let map' = Map.insertWith (++) 5 "new " map in
+                Map.lookup 5 map' @?= Just "new five"
         ],
 
         testGroup "Various tests" [
@@ -66,8 +78,8 @@ mapTests name (_ :: Proxy m) =
                 Map.size map @?= 1,
 
             testCase "toAscList . fromList sorts list" $
-                let tr = fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
-                toAscList tr @?= [(1, "x"), (2, "a"), (3, "c")]
+                let tr = Map.fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
+                Map.toAscList tr @?= [(1, "x"), (2, "a"), (3, "c")]
         ]
     ]
 
@@ -88,7 +100,7 @@ testNaiveTree = testGroup "Test NaiveTree" [
 testMap :: TestTree
 testMap = testGroup "Testing implementations of trees"
     [
-        mapTests "Data.Map.Strict" (Proxy :: Proxy SMap.Map),
+--        mapTests "Data.Map.Strict" (Proxy :: Proxy SMap.Map),
         mapTests "NaiveList" (Proxy :: Proxy NaiveList)
 --        mapTests "NaiveTree" (Proxy :: Proxy NaiveTree),
 --        testNaiveTree
