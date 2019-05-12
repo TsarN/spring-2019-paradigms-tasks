@@ -59,7 +59,7 @@ mapTests name (_ :: Proxy m) =
         testGroup "Unit tests - insertWith" [
             testCase "insertWith inserts into an empty map" $
                 let map  = empty :: m Int String in
-                let map' = Map.insertWith (const $ const $ "wrong") 5 "five" map in
+                let map' = Map.insertWith (const $ const "wrong") 5 "five" map in
                 Map.lookup 5 map' @?= Just "five",
 
             testCase "insertWith alters if value exists" $
@@ -83,12 +83,12 @@ mapTests name (_ :: Proxy m) =
         testGroup "Unit tests - insertWithKey" [
             testCase "insertWithKey inserts into an empty map" $
                 let map  = empty :: m Int String in
-                let map' = Map.insertWithKey (\k new old -> (show k) ++ new ++ old) 5 "five" map in
+                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "five" map in
                 Map.lookup 5 map' @?= Just "five",
 
             testCase "insertWithKey alters if value exists" $
                 let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.insertWithKey (\k new old -> (show k) ++ new ++ old) 5 "new " map in
+                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "new " map in
                 Map.lookup 5 map' @?= Just "5new five"
         ],
 
@@ -152,18 +152,18 @@ mapTests name (_ :: Proxy m) =
         testGroup "Unit tests - adjustWithKey" [
             testCase "adjustWithKey does nothing on an empty map" $
                 let map  = empty :: m Int String in
-                let map' = Map.adjustWithKey (\k x -> (show k) ++ "new " ++ x) 5 map in
+                let map' = Map.adjustWithKey (\k x -> show k ++ "new " ++ x) 5 map in
                 Map.null map' @?= True,
 
             testCase "adjustWithKey does nothing if key does not exist" $
                 let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.adjustWithKey (\k x -> (show k) ++ "new " ++ x) 3 map in
+                let map' = Map.adjustWithKey (\k x -> show k ++ "new " ++ x) 3 map in
                 True @?= ( Map.size map'     == 1 &&
                            Map.lookup 5 map' == Just "five"),
 
             testCase "adjustWithKey updates the value if the key exists" $
                 let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.adjustWithKey (\k x -> (show k) ++ "new " ++ x) 5 map in
+                let map' = Map.adjustWithKey (\k x -> show k ++ "new " ++ x) 5 map in
                 True @?= ( Map.size map'     == 1 &&
                            Map.lookup 5 map' == Just "5new five")
         ],
