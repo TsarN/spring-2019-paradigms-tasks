@@ -109,6 +109,27 @@ mapTests name (_ :: Proxy m) =
                 Map.toAscList map @?= [(1, "x"), (2, "a"), (3, "c")]
         ],
 
+        testGroup "Unit tests - delete" [
+            testCase "delete does nothing on an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.delete 5 map in
+                Map.null map' @?= True,
+
+            testCase "delete does nothing if key does not exist" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.delete 3 map in
+                True @?= ( Map.size map'     == 1           &&
+                           Map.lookup 5 map' == Just "five" &&
+                           Map.lookup 3 map' == Nothing ),
+
+            testCase "delete deletes the key if it exists" $
+                let map  = Map.fromList [(3, "three"), (5, "five")] :: m Int String in
+                let map' = Map.delete 3 map in
+                True @?= ( Map.size map'     == 1           &&
+                           Map.lookup 5 map' == Just "five" &&
+                           Map.lookup 3 map' == Nothing )
+        ],
+
         testGroup "Unit tests - helper functions" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in

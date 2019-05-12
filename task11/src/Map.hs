@@ -47,7 +47,7 @@ class Map t where
     insertWithKey f k = insertWith (f k) k
 
     delete :: Ord k => k -> t k a -> t k a
-    delete = undefined {- alter -}
+    delete = alter $ const Nothing
 
     adjust :: Ord k => (a -> a) -> k -> t k a -> t k a
     adjust = undefined {- alter -}
