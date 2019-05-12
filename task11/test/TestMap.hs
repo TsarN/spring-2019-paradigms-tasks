@@ -168,6 +168,31 @@ mapTests name (_ :: Proxy m) =
                            Map.lookup 5 map' == Just "5new five")
         ],
 
+        testGroup "Unit tests - update" [
+            testCase "update does nothing on an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.update (\x -> if x == "five" then Just "new five" else Nothing) 5 map in
+                Map.null map' @?= True,
+
+            testCase "update does nothing if key does not exist" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.update (\x -> if x == "five" then Just "new five" else Nothing) 3 map in
+                True @?= ( Map.size map'     == 1 &&
+                           Map.lookup 5 map' == Just "five"),
+
+            testCase "update updates the value if the key exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.update (\x -> if x == "five" then Just "new five" else Nothing) 5 map in
+                True @?= ( Map.size map'     == 1 &&
+                           Map.lookup 5 map' == Just "new five"),
+
+            testCase "update deletes the key if function returns Nothing" $
+                let map  = singleton 5 "not five" :: m Int String in
+                let map' = Map.update (\x -> if x == "five" then Just "new five" else Nothing) 5 map in
+                True @?= ( Map.size map'     == 0 &&
+                           Map.lookup 5 map' == Nothing)
+        ],
+
         testGroup "Unit tests - helper functions" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in
