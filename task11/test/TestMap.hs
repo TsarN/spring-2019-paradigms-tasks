@@ -92,18 +92,31 @@ mapTests name (_ :: Proxy m) =
                 Map.lookup 5 map' @?= Just "5new five"
         ],
 
-        testGroup "Various tests" [
+        testGroup "Unit tests - fromList" [
+            testCase "fromList constructs an empty map successfully" $
+                let map = fromList [] :: m Int String in
+                Map.null map @?= True,
+
+            testCase "fromList constructs a map successfully" $
+                let map = Map.fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
+                True @?= ( Map.size map     == 3        &&
+                           Map.lookup 1 map == Just "x" &&
+                           Map.lookup 2 map == Just "a" &&
+                           Map.lookup 3 map == Just "c" ),
+
+            testCase "toAscList . fromList sorts list" $
+                let map = Map.fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
+                Map.toAscList map @?= [(1, "x"), (2, "a"), (3, "c")]
+        ],
+
+        testGroup "Unit tests - helper functions" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in
                 Map.null map @?= True,
 
             testCase "singleton returns a singleton map" $
                 let map = singleton 5 "five" :: m Int String in
-                Map.size map @?= 1,
-
-            testCase "toAscList . fromList sorts list" $
-                let tr = Map.fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
-                Map.toAscList tr @?= [(1, "x"), (2, "a"), (3, "c")]
+                Map.size map @?= 1
         ]
     ]
 
