@@ -130,6 +130,25 @@ mapTests name (_ :: Proxy m) =
                            Map.lookup 3 map' == Nothing )
         ],
 
+        testGroup "Unit tests - adjust" [
+            testCase "adjust does nothing on an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.adjust ("new " ++) 5 map in
+                Map.null map' @?= True,
+
+            testCase "adjust does nothing if key does not exist" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.adjust ("new " ++) 3 map in
+                True @?= ( Map.size map'     == 1 &&
+                           Map.lookup 5 map' == Just "five"),
+
+            testCase "adjust updates the value if the key exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.adjust ("new " ++) 5 map in
+                True @?= ( Map.size map'     == 1 &&
+                           Map.lookup 5 map' == Just "new five")
+        ],
+
         testGroup "Unit tests - helper functions" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in

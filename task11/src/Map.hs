@@ -50,7 +50,7 @@ class Map t where
     delete = alter $ const Nothing
 
     adjust :: Ord k => (a -> a) -> k -> t k a -> t k a
-    adjust = undefined {- alter -}
+    adjust = alter . fmap
 
     adjustWithKey :: Ord k => (k -> a -> a) -> k -> t k a -> t k a
     adjustWithKey = undefined {- adjust -}
