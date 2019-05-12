@@ -71,7 +71,7 @@ class Map t where
     member k = isJust . Map.lookup k
 
     notMember :: Ord k => k -> t k a -> Bool
-    notMember = undefined {- member -}
+    notMember k = not . member k
 
     null :: t k a -> Bool
     null = undefined {- size -}
