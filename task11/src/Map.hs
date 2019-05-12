@@ -53,7 +53,7 @@ class Map t where
     adjust = alter . fmap
 
     adjustWithKey :: Ord k => (k -> a -> a) -> k -> t k a -> t k a
-    adjustWithKey = undefined {- adjust -}
+    adjustWithKey f k = adjust (f k) k
 
     update :: Ord k => (a -> Maybe a) -> k -> t k a -> t k a
     update = undefined {- alter -}
