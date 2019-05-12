@@ -59,7 +59,7 @@ class Map t where
     update = alter . maybe Nothing
 
     updateWithKey :: Ord k => (k -> a -> Maybe a) -> k -> t k a -> t k a
-    updateWithKey = undefined {- update -}
+    updateWithKey f k = update (f k) k
 
     alter :: Ord k => (Maybe a -> Maybe a) -> k -> t k a -> t k a
 
