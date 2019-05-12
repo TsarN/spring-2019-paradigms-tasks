@@ -80,6 +80,18 @@ mapTests name (_ :: Proxy m) =
                 Map.lookup 5 map' @?= Just "new five"
         ],
 
+        testGroup "Unit tests - insertWithKey" [
+            testCase "insertWithKey inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insertWithKey (\k new old -> (show k) ++ new ++ old) 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insertWithKey alters if value exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.insertWithKey (\k new old -> (show k) ++ new ++ old) 5 "new " map in
+                Map.lookup 5 map' @?= Just "5new five"
+        ],
+
         testGroup "Various tests" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in
