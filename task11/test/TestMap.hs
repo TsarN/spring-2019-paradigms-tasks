@@ -63,8 +63,20 @@ mapTests name (_ :: Proxy m) =
                 Map.lookup 5 map' @?= Just "five",
 
             testCase "insertWith alters if value exists" $
-                let map = singleton 5 "five" :: m Int String in
+                let map  = singleton 5 "five" :: m Int String in
                 let map' = Map.insertWith (++) 5 "new " map in
+                Map.lookup 5 map' @?= Just "new five"
+        ],
+
+        testGroup "Unit tests - insert" [
+            testCase "insert inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insert 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insert replaces value" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.insert 5 "new five" map in
                 Map.lookup 5 map' @?= Just "new five"
         ],
 

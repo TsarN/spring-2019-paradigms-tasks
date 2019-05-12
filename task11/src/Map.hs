@@ -36,7 +36,7 @@ class Map t where
     toAscList :: t k a -> [(k, a)]
 
     insert :: Ord k => k -> a -> t k a -> t k a
-    insert = undefined {- insertWith -}
+    insert = insertWith const
 
     insertWith :: Ord k => (a -> a -> a) -> k -> a -> t k a -> t k a
     insertWith f k a = alter ( \x -> case x of
