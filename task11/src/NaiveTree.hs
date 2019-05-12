@@ -49,17 +49,17 @@ instance Map NaiveTree where
     singleton k a = Node k a Nil Nil
 
     toAscList Nil            = []
-    toAscList (Node k a l r) = (toAscList l) ++ [(k, a)] ++ (toAscList r)
+    toAscList (Node k a l r) = toAscList l ++ [(k, a)] ++ toAscList r
 
     alter f k Nil = 
         case f Nothing of
             Nothing -> empty
             Just a  -> singleton k a
     alter f key (Node k a l r)
-        | key < k   = (alter f key l) `merge` (Node k a Nil Nil) `merge` r
-        | key > k   = l `merge` (Node k a Nil Nil) `merge` (alter f key r)
+        | key < k   = alter f key l `merge` Node k a Nil Nil `merge` r
+        | key > k   = l `merge` Node k a Nil Nil `merge` alter f key r
         | otherwise = case f (Just a) of 
-            Just value -> l `merge` (Node k value Nil Nil) `merge` r
+            Just value -> l `merge` Node k value Nil Nil `merge` r
             Nothing    -> l `merge` r
 
     lookup _ Nil = Nothing
