@@ -218,6 +218,20 @@ mapTests name (_ :: Proxy m) =
                            Map.lookup 5 map' == Nothing)
         ],
 
+        testGroup "Unit tests - member" [
+            testCase "member returns False on an empty map" $
+                let map = empty :: m Int String in
+                Map.member 5 map @?= False,
+
+            testCase "member returns False if key does not exist" $
+                let map  = singleton 5 "five" :: m Int String in
+                Map.member 3 map @?= False,
+
+            testCase "member returns True if key exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                Map.member 5 map @?= True
+        ],
+
         testGroup "Unit tests - helper functions" [
             testCase "empty returns an empty map" $
                 let map = empty :: m Int String in
