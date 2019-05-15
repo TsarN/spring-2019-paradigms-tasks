@@ -3,7 +3,7 @@
 -}
 module Map where
 
-import Data.Maybe (isJust)
+import Data.Maybe (isJust, maybe)
 
 {-|
   Поведение всех определённых здесь функций должно быть аналогично
@@ -33,7 +33,7 @@ class Map t where
     singleton :: k -> a -> t k a
 
     fromList :: Ord k => [(k, a)] -> t k a
-    fromList = foldl (\m (k, a) -> insert k a m) empty
+    fromList = foldl (flip $ uncurry insert) empty
 
     toAscList :: t k a -> [(k, a)]
 
@@ -41,9 +41,7 @@ class Map t where
     insert = insertWith const
 
     insertWith :: Ord k => (a -> a -> a) -> k -> a -> t k a -> t k a
-    insertWith f k a = alter ( \x -> case x of
-            Just value -> Just $ f a value
-            Nothing    -> Just a ) k
+    insertWith = flip . ((alter . (Just .)) .) . (<*>) maybe
 
     insertWithKey :: Ord k => (k -> a -> a -> a) -> k -> a -> t k a -> t k a
     insertWithKey f k = insertWith (f k) k

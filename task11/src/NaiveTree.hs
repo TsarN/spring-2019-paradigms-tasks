@@ -51,10 +51,7 @@ instance Map NaiveTree where
     toAscList Nil            = []
     toAscList (Node k a l r) = toAscList l ++ [(k, a)] ++ toAscList r
 
-    alter f k Nil = 
-        case f Nothing of
-            Nothing -> empty
-            Just a  -> singleton k a
+    alter f k Nil = maybe empty (singleton k) $ f Nothing
     alter f key (Node k a l r)
         | key < k   = alter f key l `merge` Node k a Nil Nil `merge` r
         | key > k   = l `merge` Node k a Nil Nil `merge` alter f key r

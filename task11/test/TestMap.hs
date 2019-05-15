@@ -27,72 +27,7 @@ mapTests :: Map m => String -> Proxy m -> TestTree
 mapTests name (_ :: Proxy m) =
     -- Чтобы можно было связать типовую переменную m здесь и в let ниже, нужно расширение ScopedTypeVariables.
     testGroup name [
-        testGroup "Unit tests - alter and lookup" [
-            testCase "insert via alter into an empty map works" $
-                let map  = empty :: m Int String in
-                let map' = Map.alter (const $ Just "five") 5 map in
-                Map.lookup 5 map' @?= Just "five",
-
-            testCase "insert via alter into a singleton map works" $
-                let map  = singleton 3 "three" :: m Int String in
-                let map' = Map.alter (const $ Just "five") 5 map in
-                True @?= ( Map.lookup 3 map' == Just "three" &&
-                           Map.lookup 5 map' == Just "five" ),
-
-            testCase "alter into a singleton map works" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.alter (const $ Just "FIVE") 5 map in
-                Map.lookup 5 map' @?= Just "FIVE",
-
-            testCase "delete via alter does nothing if element doesn't exist" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.alter (const Nothing) 3 map in
-                True @?= ( Map.lookup 3 map' == Nothing &&
-                           Map.lookup 5 map' == Just "five" ),
-
-            testCase "delete via alter works" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.alter (const Nothing) 5 map in
-                Map.lookup 5 map' @?= Nothing
-        ],
-
-        testGroup "Unit tests - insertWith" [
-            testCase "insertWith inserts into an empty map" $
-                let map  = empty :: m Int String in
-                let map' = Map.insertWith (const $ const "wrong") 5 "five" map in
-                Map.lookup 5 map' @?= Just "five",
-
-            testCase "insertWith alters if value exists" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.insertWith (++) 5 "new " map in
-                Map.lookup 5 map' @?= Just "new five"
-        ],
-
-        testGroup "Unit tests - insert" [
-            testCase "insert inserts into an empty map" $
-                let map  = empty :: m Int String in
-                let map' = Map.insert 5 "five" map in
-                Map.lookup 5 map' @?= Just "five",
-
-            testCase "insert replaces value" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.insert 5 "new five" map in
-                Map.lookup 5 map' @?= Just "new five"
-        ],
-
-        testGroup "Unit tests - insertWithKey" [
-            testCase "insertWithKey inserts into an empty map" $
-                let map  = empty :: m Int String in
-                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "five" map in
-                Map.lookup 5 map' @?= Just "five",
-
-            testCase "insertWithKey alters if value exists" $
-                let map  = singleton 5 "five" :: m Int String in
-                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "new " map in
-                Map.lookup 5 map' @?= Just "5new five"
-        ],
-
-        testGroup "Unit tests - fromList" [
+        testGroup "Unit tests - fromList and toAscList" [
             testCase "fromList constructs an empty map successfully" $
                 let map = fromList [] :: m Int String in
                 Map.null map @?= True,
@@ -107,6 +42,42 @@ mapTests name (_ :: Proxy m) =
             testCase "toAscList . fromList sorts list" $
                 let map = Map.fromList [(2, "a"), (1, "b"), (3, "c"), (1, "x")] :: m Int String in
                 Map.toAscList map @?= [(1, "x"), (2, "a"), (3, "c")]
+        ],
+
+        testGroup "Unit tests - insert" [
+            testCase "insert inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insert 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insert replaces value" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.insert 5 "new five" map in
+                Map.lookup 5 map' @?= Just "new five"
+        ],
+
+        testGroup "Unit tests - insertWith" [
+            testCase "insertWith inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insertWith (const $ const "wrong") 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insertWith alters if value exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.insertWith (++) 5 "new " map in
+                Map.lookup 5 map' @?= Just "new five"
+        ],
+
+        testGroup "Unit tests - insertWithKey" [
+            testCase "insertWithKey inserts into an empty map" $
+                let map  = empty :: m Int String in
+                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "five" map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insertWithKey alters if value exists" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.insertWithKey (\k new old -> show k ++ new ++ old) 5 "new " map in
+                Map.lookup 5 map' @?= Just "5new five"
         ],
 
         testGroup "Unit tests - delete" [
@@ -216,6 +187,35 @@ mapTests name (_ :: Proxy m) =
                 let map' = Map.updateWithKey (\k x -> if x == "five" then Just (show k ++ "new five") else Nothing) 5 map in
                 True @?= ( Map.size map'     == 0 &&
                            Map.lookup 5 map' == Nothing)
+        ],
+
+        testGroup "Unit tests - alter and lookup" [
+            testCase "insert via alter into an empty map works" $
+                let map  = empty :: m Int String in
+                let map' = Map.alter (const $ Just "five") 5 map in
+                Map.lookup 5 map' @?= Just "five",
+
+            testCase "insert via alter into a singleton map works" $
+                let map  = singleton 3 "three" :: m Int String in
+                let map' = Map.alter (const $ Just "five") 5 map in
+                True @?= ( Map.lookup 3 map' == Just "three" &&
+                           Map.lookup 5 map' == Just "five" ),
+
+            testCase "alter into a singleton map works" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.alter (const $ Just "FIVE") 5 map in
+                Map.lookup 5 map' @?= Just "FIVE",
+
+            testCase "delete via alter does nothing if element doesn't exist" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.alter (const Nothing) 3 map in
+                True @?= ( Map.lookup 3 map' == Nothing &&
+                           Map.lookup 5 map' == Just "five" ),
+
+            testCase "delete via alter works" $
+                let map  = singleton 5 "five" :: m Int String in
+                let map' = Map.alter (const Nothing) 5 map in
+                Map.lookup 5 map' @?= Nothing
         ],
 
         testGroup "Unit tests - member" [
